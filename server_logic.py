@@ -1,8 +1,12 @@
 import requests
 import re
 
+from datetime import datetime
 from elasticsearch import Elasticsearch
 from flask import Flask
+
+from elasticsearch_utils import elastic_database
+from data_utils import get_numbers_list
 
 def get_rand_number():
 
@@ -22,10 +26,10 @@ def get_rand_number():
     return random_val
 
 
-def local_database(number):
-
-    es = Elasticsearch()
-
+def online_database(number):
+    
+    ## Beebote bbdd
+    return 1
 
 
 def main():
@@ -36,7 +40,15 @@ def main():
 
     # Guardar en la BBDD local
 
+    database = elastic_database()
 
+    data = {
+        "number": number
+    }
+    database.post_info("random_num",data)
+    
+    i = database.get_info("random_num")
+    print(get_numbers_list(i['hits']['hits']))
 
     # Guardar en la BBDD de la nube
 

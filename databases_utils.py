@@ -32,7 +32,12 @@ class elastic_database():
 
         return self.es.search(index=index_name,size = 500)
 
+class beebote_database():
+    
+    def __init__(self):
 
+        ## Beebote bbdd
+        self.a = 1
 
 def conf_database(host = 'localhost', port = 9200):
 
@@ -51,7 +56,7 @@ def conf_database(host = 'localhost', port = 9200):
 
     es.indices.create(index="random_num",body = configurations)
 
-    # ## Anadir para user u pass
+    # ## Anadir para user y pass
 
 
 def reset_database(host = 'localhost', port = 9200):

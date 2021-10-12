@@ -1,57 +1,42 @@
-import requests
-import re
+import sched
+import time
 
-from datetime import datetime
-from elasticsearch import Elasticsearch
-from flask import Flask
+from databases_utils import elastic_database
+from data_utils import get_rand_number,get_numbers_list
 
-from elasticsearch_utils import elastic_database
-from data_utils import get_numbers_list
-
-def get_rand_number():
-
-    # Web HTML info
-
-    url = requests.get("https://www.numeroalazar.com.ar/")
-    htmlcont = url.text
-
-    # Regular expression
-
-    patron = re.compile('[1-9]*[0-9]\.[0-9][0-9]<')
-
-    # Buscar los elementos que se ajustan a la expresion (todos los números generados) y quedarnos con el primero
-
-    match = re.findall(patron,htmlcont)
-    random_val = float(match[0][:len(match[0])-1])
-    return random_val
-
-
-def online_database(number):
-    
-    ## Beebote bbdd
-    return 1
-
+TIME_GET_N = 10
 
 def main():
 
     
     number = get_rand_number()
-    print(number)
+    #print(number)
 
     # Guardar en la BBDD local
 
     database = elastic_database()
-
     data = {
         "number": number
     }
+   
     database.post_info("random_num",data)
-    
-    i = database.get_info("random_num")
-    print(get_numbers_list(i['hits']['hits']))
 
-    # Guardar en la BBDD de la nube
+    s.enter(TIME_GET_N,1,main)
+    
+    #i = database.get_info("random_num")
+    #print(get_numbers_list(i['hits']['hits']))
+
+    # Guardar en la BBDD de la nube -----------------------------------
 
 
 if __name__ == "__main__":
-    main()
+
+    try:
+        s = sched.scheduler(time.time, time.sleep)
+        s.enter(TIME_GET_N,1,main)
+        s.run()
+    except KeyboardInterrupt:
+        exit()
+
+
+    

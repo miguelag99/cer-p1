@@ -4,7 +4,7 @@ import time
 from databases_utils import elastic_database
 from data_utils import get_rand_number,get_numbers_list
 
-TIME_GET_N = 10
+TIME_GET_N = 120
 
 def main():
 

@@ -1,0 +1,4 @@
+Flask
+numpy
+elasticsearch
+elasticsearch_dsl

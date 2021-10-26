@@ -24,13 +24,14 @@ class elastic_database():
         self.es.indices.delete(index=index_name, ignore=[400, 404])
         self.es.indices.create(index=index_name, body=conf)
 
-    def post_info(self, index_name, doc):
+    def post_info(self, index_name, doc, _id = None):
 
-        self.es.index(index=index_name, document=doc)
+        self.es.index(index=index_name, document=doc, id=_id)
 
     def get_info(self, index_name, q = None):
 
-        return self.es.search(index = index_name, query = q ,size = 1500)
+        aux = self.es.search(index = index_name, query = q ,size = 1500)
+        return aux['hits']['hits']
 
 
 class beebote_database():
@@ -66,7 +67,9 @@ def conf_database(host='localhost', port=9200):
             "properties": {
                 "username": {"type": "text"},
                 "email": {"type": "text"},
-                "pass": {"type": "text"}
+                "pass": {"type": "text"},
+                "n_local_acc": {"type": "integer"},
+                "n_cloud_acc": {"type": "integer"}
             }
         }
     }
@@ -75,7 +78,9 @@ def conf_database(host='localhost', port=9200):
     data = {
         "username": "miguelag99",
         "email": "miguelag99@hotmail.com",
-        "pass": "a"
+        "pass": "a",
+        "n_local_acc": 0,
+        "n_cloud_acc": 0
     }
     es.index(index="user_data", document=data)
     

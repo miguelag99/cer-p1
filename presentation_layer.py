@@ -15,15 +15,29 @@ app.secret_key = "ayush"
 
 @app.route('/')
 def home():
+
+    ## Comprobamos si hay sesion iniciada para mostrar la Web
+
     if 'email' in session:
+
+        # Si hay user se muestran mas opciones y sus datos (email y accesos a medias)
+
         email = session['email']
-        return render_template('Web_ini_logged.html', user=email)
+        user_info = database.get_info("user_data", q = {"match_phrase": {"email": email}})[0]
+
+        return render_template('Web_ini_logged.html', user=user_info['_source']['username'],\
+             local_n = user_info['_source']['n_local_acc'], cloud_n = user_info['_source']['n_cloud_acc'])
+
     else:
+
+        # Si no hay sesion iniciada se extrae un numero y se muestra y almacena en las BBDD
+
         n = get_rand_number()
         data = {
             "number": n
         }
         database.post_info("random_num", data)
+        ################################Guardar en la nube
         return render_template('Web_ini.html', num=n)
 
 @app.route('/login')
@@ -40,11 +54,13 @@ def check_user():
         email = request.form['email']
         passw = request.form['pass']
         email_search = database.get_info("user_data", q = {"match_phrase": {"email": email}})
-        
-        if len(email_search['hits']['hits']) == 0:
+        print(email_search)
+        if len(email_search) == 0:
             return "Email no registrado"
+        elif len(email_search) > 1:
+            return "Error en la cuenta, contacte con el admin de la app"
         else:
-            data = email_search['hits']['hits']
+            data = email_search
             if passw == data[0]['_source']['pass']:
                 session['email'] = email
                 return render_template('login_success.html')
@@ -61,12 +77,15 @@ def new_user():
         user_search = database.get_info("user_data", q = {"match_phrase": {"username": new_user}})
         email_search = database.get_info("user_data", q = {"match_phrase": {"email": new_mail}})
 
-        if len(user_search['hits']['hits']) == 0 and len(email_search['hits']['hits']) == 0:
+        if len(user_search) == 0 and len(email_search) == 0:
             data = {
                 "username": new_user,
                 "email": new_mail,
-                "pass": new_pass
+                "pass": new_pass,
+                "n_local_acc": 0,
+                "n_cloud_acc": 0
             }
+            
             database.post_info("user_data", data)
             session['email'] = new_mail
             return render_template('login_success.html')
@@ -88,9 +107,15 @@ def profile():
 
 @app.route('/local_mean')
 def local_mean():
+    ## Obtenemos la media de todos los num
     data = database.get_info("random_num")
-    mean = np.mean(get_numbers_list(data['hits']['hits']))
-    print(get_numbers_list(data['hits']['hits']))
+    mean = np.mean(get_numbers_list(data))
+    
+    ## Buscamos los datos del usuario para actualizar las veces que ha solicitado la media y lo guardamos en la BBDD
+    user_data = database.get_info("user_data", q = {"match_phrase": {"email": session['email']}})[0]
+    user_data['_source']['n_local_acc'] += 1
+    database.post_info(index_name="user_data",_id = user_data['_id'],doc=user_data['_source'])
+
     return render_template('mean.html', bbdd='local', num=mean)
 
 @app.route('/cloud_mean')

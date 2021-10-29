@@ -31,7 +31,18 @@ def get_numbers_list(dict_list):
     else:
         return []
 
+def get_cloud_numbers_list(dict_list):
 
+    if len(dict_list) != 0:
+
+        func = lambda x: x['data']
+        v_func = np.vectorize(func)
+
+        return v_func(dict_list)
+
+    else:
+        return []
+        
 def get_users_info(dict_list):
 
     if len(dict_list) != 0:

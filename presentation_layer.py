@@ -5,7 +5,7 @@ import argparse
 
 from flask import Flask, render_template, redirect, request, url_for, session, flash
 
-from data_utils import get_rand_number, get_numbers_list
+from data_utils import get_rand_number, get_numbers_list, get_cloud_numbers_list
 from databases_utils import elastic_database, beebote_database, reset_database
 
 database = elastic_database()
@@ -125,6 +125,7 @@ def local_mean():
         data = database.get_info("random_num")
         mean = np.mean(get_numbers_list(data))
         print(get_numbers_list(data))
+
         ## Buscamos los datos del usuario para actualizar las veces que ha solicitado la media y lo guardamos en la BBDD
         user_data = database.get_info("user_data", q = {"match_phrase": {"email": session['email']}})[0]
         user_data['_source']['n_local_acc'] += 1
@@ -137,7 +138,17 @@ def local_mean():
 @app.route('/cloud_mean')
 def cloud_mean():
     if 'email' in session:
-        return "a"
+        data = cloud_database.get_info("Cer_p1","random_n")
+        mean = np.mean(get_cloud_numbers_list(data))
+        print(get_cloud_numbers_list(data))        
+
+        ## Buscamos los datos del usuario para actualizar las veces que ha solicitado la media y lo guardamos en la BBDD
+        user_data = database.get_info("user_data", q = {"match_phrase": {"email": session['email']}})[0]
+        user_data['_source']['n_cloud_acc'] += 1
+        database.post_info(index_name="user_data",_id = user_data['_id'],doc=user_data['_source'])
+
+        return render_template('mean.html', bbdd='cloud', num=mean)
+
     else:
         return "Usuario no identificado, inicie sesion"
 

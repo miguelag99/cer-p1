@@ -2,6 +2,10 @@ import argparse
 
 from elasticsearch import Elasticsearch
 #import elasticsearch_dsl
+from beebotte import *
+
+BEEBOTTE_API_YEY = "vXAtkOwObYu9sEq78XnyRO4v"
+BEEBOTTE_SECRET_KEY = "m1Ycfq8GTHm211zrrhvjHY3saKLyerIq"
 
 
 class elastic_database():
@@ -30,7 +34,7 @@ class elastic_database():
 
     def get_info(self, index_name, q = None):
 
-        aux = self.es.search(index = index_name, query = q ,size = 1500)
+        aux = self.es.search(index = index_name, query = q ,size = 500)
         return aux['hits']['hits']
 
 
@@ -38,13 +42,39 @@ class beebote_database():
 
     def __init__(self):
 
-        # Beebote bbdd
-        self.a = 1
+        self.bclient = BBT(BEEBOTTE_API_YEY,BEEBOTTE_SECRET_KEY)
+    
+
+    def post_info(self, channel, resource, data):
+
+        resource = Resource(self.bclient,channel,resource)
+        resource.write(data)
+
+    def get_info(self, channel, resource, max_elements = 500):
+
+        resource = Resource(self.bclient,channel,resource)
+        return resource.read(max_elements)
+
+    def reset_resource(self,channel,resource):
+
+        self.bclient.deleteResource(channel,resource)
+
+        self.bclient.addResource(channel=channel,name=resource)
+
+    def create_resource(self,channel,resource):
+
+        self.bclient.addResource(channel=channel,name=resource)
+
+    def delete_resource(self,channel,resource):
+
+        self.bclient.deleteResource(channel,resource)
+
 
 
 def conf_database(host='localhost', port=9200):
 
     es = Elasticsearch([{'host': host, 'port': port}])
+    bbt = beebote_database()
 
     configurations = {
         "settings": {
@@ -75,15 +105,25 @@ def conf_database(host='localhost', port=9200):
     }
 
     es.indices.create(index="user_data", body=configurations)
-    data = {
-        "username": "miguelag99",
-        "email": "miguelag99@hotmail.com",
-        "pass": "a",
-        "n_local_acc": 0,
-        "n_cloud_acc": 0
-    }
-    es.index(index="user_data", document=data)
-    
+    # data = {
+    #     "username": "miguelag99",
+    #     "email": "miguelag99@hotmail.com",
+    #     "pass": "a",
+    #     "n_local_acc": 0,
+    #     "n_cloud_acc": 0
+    # }
+    # es.index(index="user_data", document=data)
+
+    bbt.create_resource("Cer_p1","random_n")
+    bbt.create_resource("Cer_p1","user_data")
+
+    # data = {
+    #     "username": "miguelag99",
+    #     "email": "miguelag99@hotmail.com",
+    #     "pass": "a"
+    # }
+
+    # bbt.post_info(channel="Cer_p1",resource="user_data",data=data)
 
 
 def reset_database(host='localhost', port=9200):
@@ -92,22 +132,10 @@ def reset_database(host='localhost', port=9200):
 
     es.indices.delete(index="random_num", ignore=[400, 404])
     es.indices.delete(index="user_data", ignore=[400, 404])
+
+    bbt = beebote_database()
+    bbt.delete_resource(channel='Cer_p1',resource='user_data')
+    bbt.delete_resource(channel='Cer_p1',resource='random_n')
+
     conf_database()
 
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-conf", "--configure_local_database",
-                        help="Configurar la base de datos local", action="store_true")
-    parser.add_argument("-reset", "--res_database",
-                        help="Eliminar datos de los indices de numeros y users", action="store_true")
-    args = parser.parse_args()
-
-    if args.configure_local_database:
-
-        conf_database()
-
-    if args.res_database:
-
-        reset_database()

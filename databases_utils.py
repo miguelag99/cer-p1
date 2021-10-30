@@ -97,7 +97,7 @@ def conf_database(host='localhost', port=9200):
             "properties": {
                 "username": {"type": "text"},
                 "email": {"type": "text"},
-                "pass": {"type": "text"},
+                "pass": {"type": "binary"},
                 "n_local_acc": {"type": "integer"},
                 "n_cloud_acc": {"type": "integer"}
             }
@@ -134,8 +134,11 @@ def reset_database(host='localhost', port=9200):
     es.indices.delete(index="user_data", ignore=[400, 404])
 
     bbt = beebote_database()
-    bbt.delete_resource(channel='Cer_p1',resource='user_data')
-    bbt.delete_resource(channel='Cer_p1',resource='random_n')
+    try:
+        bbt.delete_resource(channel='Cer_p1',resource='user_data')
+        bbt.delete_resource(channel='Cer_p1',resource='random_n')
+    except:
+        pass
 
     conf_database()
 

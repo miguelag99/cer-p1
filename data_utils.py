@@ -1,6 +1,11 @@
 import requests
 import re
 import numpy as np
+import os
+import base64
+
+from cryptography.fernet import Fernet
+
 
 def get_rand_number():
 
@@ -55,3 +60,41 @@ def get_users_info(dict_list):
     else:
         return []
 
+
+
+
+class encrypt_object():
+    def __init__(self, generate=False):
+
+        if not os.path.exists('./key.key'):
+
+            self.generate_encrypt_key()
+
+        self.load_key()
+        self.F = Fernet(self.key)
+
+    def generate_encrypt_key(self):
+
+        key = Fernet.generate_key()
+        file = open("key.key", "wb")
+        file.write(key)
+        file.close()
+
+    def load_key(self):
+
+        file = open("key.key", "rb")
+        self.key = file.read()
+        file.close()
+     
+    def encrypt(self,data):
+        
+        encrypted = base64.b64encode(self.F.encrypt(data.encode()))
+        return encrypted.decode('ascii')
+
+
+    def decrypt(self,data, string = False):
+
+        if string == True:
+            data = base64.b64decode(data)
+
+        return self.F.decrypt(data).decode()

@@ -1,15 +1,15 @@
-import hashlib
-import re
 import numpy as np
 import argparse
 
+
 from flask import Flask, render_template, redirect, request, url_for, session, flash
 
-from data_utils import get_rand_number, get_numbers_list, get_cloud_numbers_list
+from data_utils import get_rand_number, get_numbers_list, get_cloud_numbers_list, encrypt_object
 from databases_utils import elastic_database, beebote_database, reset_database
 
 database = elastic_database()
 cloud_database = beebote_database()
+encrypt_data = encrypt_object()
 
 app = Flask(__name__)
 app.secret_key = "ayush"
@@ -55,7 +55,7 @@ def register():
 def check_user():
     if request.method == "POST":
         email = request.form['email']
-        passw = request.form['pass']
+        passw = encrypt_data.encrypt(request.form['pass'])
         email_search = database.get_info("user_data", q = {"match_phrase": {"email": email}})
         
         if len(email_search) == 0:
@@ -75,7 +75,7 @@ def new_user():
     if request.method == "POST":
         new_user = request.form['username']
         new_mail = request.form['email']
-        new_pass = request.form['pass']
+        new_pass = encrypt_data.encrypt(request.form['pass'])
 
         user_search = database.get_info("user_data", q = {"match_phrase": {"username": new_user}})
         email_search = database.get_info("user_data", q = {"match_phrase": {"email": new_mail}})
@@ -164,11 +164,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-reset", "--res_database",
                         help="Eliminar datos de los indices de numeros y users", action="store_true")
+ 
     args = parser.parse_args()
     
     if args.res_database:
-
         reset_database()
     
+  
+
     # app.run()
     app.run(host='0.0.0.0', port=5000, debug=True)

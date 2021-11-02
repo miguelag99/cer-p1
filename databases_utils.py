@@ -105,25 +105,9 @@ def conf_database(host='localhost', port=9200):
     }
 
     es.indices.create(index="user_data", body=configurations)
-    # data = {
-    #     "username": "miguelag99",
-    #     "email": "miguelag99@hotmail.com",
-    #     "pass": "a",
-    #     "n_local_acc": 0,
-    #     "n_cloud_acc": 0
-    # }
-    # es.index(index="user_data", document=data)
 
     bbt.create_resource("Cer_p1","random_n")
     bbt.create_resource("Cer_p1","user_data")
-
-    # data = {
-    #     "username": "miguelag99",
-    #     "email": "miguelag99@hotmail.com",
-    #     "pass": "a"
-    # }
-
-    # bbt.post_info(channel="Cer_p1",resource="user_data",data=data)
 
 
 def reset_database(host='localhost', port=9200):

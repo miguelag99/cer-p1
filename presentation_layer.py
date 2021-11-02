@@ -55,7 +55,7 @@ def register():
 def check_user():
     if request.method == "POST":
         email = request.form['email']
-        passw = encrypt_data.encrypt(request.form['pass'])
+        passw = request.form['pass']
         email_search = database.get_info("user_data", q = {"match_phrase": {"email": email}})
         
         if len(email_search) == 0:
@@ -64,7 +64,8 @@ def check_user():
             return "Error en la cuenta, contacte con el admin de la app"
         else:
             data = email_search
-            if passw == data[0]['_source']['pass']:
+           
+            if passw == encrypt_data.decrypt(data[0]['_source']['pass'],string=True):
                 session['email'] = email
                 return render_template('login_success.html')
             else:
@@ -76,6 +77,7 @@ def new_user():
         new_user = request.form['username']
         new_mail = request.form['email']
         new_pass = encrypt_data.encrypt(request.form['pass'])
+        print("New_pass:{}".format(request.form['pass']))
 
         user_search = database.get_info("user_data", q = {"match_phrase": {"username": new_user}})
         email_search = database.get_info("user_data", q = {"match_phrase": {"email": new_mail}})
@@ -156,6 +158,28 @@ def cloud_mean():
 def dashboard():
     if 'email' in session:
         return render_template('dashboard.html')
+    else:
+        return "Usuario no identificado, inicie sesion"
+
+@app.route('/umbral_form')
+def umbral_form():
+    if 'email' in session:
+        return render_template('umbral_form.html')
+    else:
+        return "Usuario no identificado, inicie sesion"
+
+@app.route('/umbral',methods=["POST"])
+def umbral():
+    if 'email' in session:
+        if request.method == "POST":
+        
+            umb = request.form['umbral'] 
+            data = database.get_info("random_num")
+            numbers = get_numbers_list(data)
+            print(numbers)
+            filtered = numbers[numbers>float(umb)]
+            print(filtered)
+            return render_template('umbral.html',n1 = filtered[-1],n2 = filtered[-2],n3 = filtered[-3],n4 = filtered[-4],n5 = filtered[-5])
     else:
         return "Usuario no identificado, inicie sesion"
 

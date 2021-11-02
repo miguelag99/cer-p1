@@ -3,3 +3,4 @@ numpy
 elasticsearch
 elasticsearch_dsl
 cryptography
+beebotte

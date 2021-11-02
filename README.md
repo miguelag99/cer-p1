@@ -4,7 +4,7 @@
 
 Configuración inicial (requiere pip3):
 
-    git clone git@github.com:miguelag99/cer-p1.git
+    git clone https://github.com/miguelag99/cer-p1.git
     cd cer-p1
     sh install_webapp.sh
 

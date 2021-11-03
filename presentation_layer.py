@@ -172,14 +172,26 @@ def umbral_form():
 def umbral():
     if 'email' in session:
         if request.method == "POST":
-        
+            a = b =c = d = '' 
             umb = request.form['umbral'] 
             data = database.get_info("random_num")
             numbers = get_numbers_list(data)
-            print(numbers)
             filtered = numbers[numbers>float(umb)]
             print(filtered)
-            return render_template('umbral.html',n1 = filtered[-1],n2 = filtered[-2],n3 = filtered[-3],n4 = filtered[-4],n5 = filtered[-5])
+            print(len(filtered))
+
+            if len(filtered) > 5:
+                return render_template('umbral.html',n1 = filtered[-1],n2 = filtered[-2],n3 = filtered[-3],n4 = filtered[-4],n5 = filtered[-5])
+            elif len(filtered) == 0:
+                return 'No hay numeros que cumplan el umbral'
+            else:
+                for i in range(len(filtered)):
+                    if i == 0: a = filtered[-1]
+                    if i == 1: b = filtered[-2]
+                    if i == 2: c = filtered[-3]
+                    if i == 3: d = filtered[-4]
+                return render_template('umbral.html',n1 = a,n2 = b,n3 = c,n4 = d,n5 = '')
+           
     else:
         return "Usuario no identificado, inicie sesion"
 
